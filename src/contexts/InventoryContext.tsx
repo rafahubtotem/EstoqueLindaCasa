@@ -1,0 +1,156 @@
+import { createContext, useContext, useState, ReactNode, useCallback } from "react";
+import { Product, ProductStatus, StoreUnit, HistoryEntry, SofaDetails, SystemUser, OrderDetails } from "@/types/inventory";
+import { generateMockProducts } from "@/data/mockData";
+
+interface InventoryContextType {
+  products: Product[];
+  addProduct: (product: Omit<Product, "id" | "history" | "createdAt" | "updatedAt">) => void;
+  updateProduct: (id: string, product: Partial<Product>, user: SystemUser, reason?: string) => void;
+  updateProductStatus: (id: string, status: ProductStatus, user: SystemUser, reason?: string, soldBy?: string, soldUnit?: StoreUnit, orderDetails?: OrderDetails) => void;
+  transferProduct: (id: string, newUnit: StoreUnit, user: SystemUser, reason?: string) => void;
+  deleteProduct: (id: string, user: SystemUser) => boolean;
+  getProductsByUnit: (unit: StoreUnit) => Product[];
+  getProductsByStatus: (status: ProductStatus) => Product[];
+  stats: {
+    total: number;
+    available: number;
+    sold: number;
+    ordered: number;
+    reserved: number;
+    byUnit: Record<StoreUnit, number>;
+  };
+}
+
+const InventoryContext = createContext<InventoryContextType | null>(null);
+
+export function InventoryProvider({ children }: { children: ReactNode }) {
+  const [products, setProducts] = useState<Product[]>(() => generateMockProducts());
+
+  const addProduct = useCallback((product: Omit<Product, "id" | "history" | "createdAt" | "updatedAt">) => {
+    const now = new Date().toISOString();
+    const newProduct: Product = {
+      ...product,
+      id: `p-${Date.now()}`,
+      createdAt: now,
+      updatedAt: now,
+      history: [{
+        id: `h-${Date.now()}`,
+        action: "CREATED",
+        user: product.createdBy,
+        timestamp: now,
+        details: {
+          reason: `Produto cadastrado na unidade ${product.unit}`,
+        },
+      }],
+    };
+    setProducts(prev => [newProduct, ...prev]);
+  }, []);
+
+  const updateProduct = useCallback((id: string, updates: Partial<Product>, user: SystemUser, reason?: string) => {
+    const now = new Date().toISOString();
+    setProducts(prev => prev.map(p => {
+      if (p.id !== id) return p;
+      const entry: HistoryEntry = {
+        id: `h-${Date.now()}`,
+        action: "EDITED",
+        user,
+        timestamp: now,
+        details: {
+          reason: reason || "Produto editado",
+        },
+      };
+      return {
+        ...p,
+        ...updates,
+        updatedAt: now,
+        history: [entry, ...p.history],
+      };
+    }));
+  }, []);
+
+  const updateProductStatus = useCallback((id: string, status: ProductStatus, user: SystemUser, reason?: string, soldBy?: string, soldUnit?: StoreUnit, orderDetails?: OrderDetails) => {
+    const now = new Date().toISOString();
+    setProducts(prev => prev.map(p => {
+      if (p.id !== id) return p;
+      const entry: HistoryEntry = {
+        id: `h-${Date.now()}`,
+        action: "STATUS_CHANGED",
+        user,
+        timestamp: now,
+        details: {
+          oldStatus: p.status,
+          newStatus: status,
+          reason: reason || `Status alterado para ${status}`,
+        },
+      };
+      return {
+        ...p,
+        status,
+        updatedAt: now,
+        history: [entry, ...p.history],
+        ...(status === "Vendido" ? { soldBy: soldBy || user, soldAt: now, soldUnit: soldUnit || p.unit } : {}),
+        ...(status === "Pedido" && orderDetails ? { orderDetails } : {}),
+      };
+    }));
+  }, []);
+
+  const transferProduct = useCallback((id: string, newUnit: StoreUnit, user: SystemUser, reason?: string) => {
+    const now = new Date().toISOString();
+    setProducts(prev => prev.map(p => {
+      if (p.id !== id) return p;
+      const entry: HistoryEntry = {
+        id: `h-${Date.now()}`,
+        action: "TRANSFERRED",
+        user,
+        timestamp: now,
+        details: {
+          oldUnit: p.unit,
+          newUnit: newUnit,
+          reason: reason || `Transferido de ${p.unit} para ${newUnit}`,
+        },
+      };
+      return { ...p, unit: newUnit, updatedAt: now, history: [entry, ...p.history] };
+    }));
+  }, []);
+
+  const deleteProduct = useCallback((id: string, user: SystemUser): boolean => {
+    // Apenas ADMIN pode deletar
+    if (user !== "ADMIN") {
+      return false;
+    }
+    setProducts(prev => prev.filter(p => p.id !== id));
+    return true;
+  }, []);
+
+  const getProductsByUnit = useCallback((unit: StoreUnit) => products.filter(p => p.unit === unit), [products]);
+  const getProductsByStatus = useCallback((status: ProductStatus) => products.filter(p => p.status === status), [products]);
+
+  const stats = {
+    total: products.length,
+    available: products.filter(p => p.status === "Disponível").length,
+    sold: products.filter(p => p.status === "Vendido").length,
+    ordered: products.filter(p => p.status === "Pedido").length,
+    reserved: products.filter(p => p.status === "Reservado").length,
+    byUnit: {
+      "Shopping Praça Nova": products.filter(p => p.unit === "Shopping Praça Nova").length,
+      "Camobi": products.filter(p => p.unit === "Camobi").length,
+      "Estoque": products.filter(p => p.unit === "Estoque").length,
+    } as Record<StoreUnit, number>,
+  };
+
+  return (
+    <InventoryContext.Provider value={{
+      products, addProduct, updateProduct, updateProductStatus, transferProduct, deleteProduct,
+      getProductsByUnit, getProductsByStatus, stats,
+    }}>
+      {children}
+    </InventoryContext.Provider>
+  );
+}
+
+export const useInventory = () => {
+  const ctx = useContext(InventoryContext);
+  if (!ctx) throw new Error("useInventory must be inside InventoryProvider");
+  return ctx;
+};
+
