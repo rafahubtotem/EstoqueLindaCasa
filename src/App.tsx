@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { InventoryProvider } from "@/contexts/InventoryContext";
 import Index from "./pages/Index";
 import Produtos from "./pages/Produtos";
+import Entregas from "./pages/Entregas";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/produtos" element={<Produtos />} />
+              <Route path="/entregas" element={<Entregas />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

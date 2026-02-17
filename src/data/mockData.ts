@@ -16,7 +16,8 @@ const units: StoreUnit[] = ["Shopping Praça Nova", "Camobi", "Estoque"];
 const statuses: ProductStatus[] = ["Disponível", "Vendido", "Pedido", "Reservado"];
 const colors = ["Cinza", "Bege", "Marrom", "Preto", "Azul", "Verde", "Terracota"];
 const fabrics = ["Veludo", "Linho", "Suede", "Couro", "Chenille", "Boucle"];
-const manufacturers = ["Tokstok", "Etna", "Mobly", "Muma", "Oppa", "Westwing"];
+const manufacturers = ["DallaCosta",
+  "Artesano", "Mobly", "Muma", "Oppa", "Westwing"];
 
 const sofaImages = [
   "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=300&fit=crop",

@@ -20,10 +20,29 @@ const units: StoreUnit[] = ["Shopping Praça Nova", "Camobi", "Estoque"];
 const fabrics = ["Veludo", "Linho", "Suede", "Couro", "Chenille", "Boucle", "Jacquard"];
 const colors = ["Cinza", "Bege", "Marrom", "Preto", "Azul", "Verde", "Terracota", "Branco", "Caramelo"];
 
-export function AddProductDialog() {
+interface AddProductDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  trigger?: React.ReactNode;
+}
+
+export function AddProductDialog({ open: controlledOpen, onOpenChange, trigger }: AddProductDialogProps = {}) {
   const { addProduct } = useInventory();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = (value: boolean) => {
+    if (isControlled) {
+      onOpenChange?.(value);
+    } else {
+      setInternalOpen(value);
+    }
+  };
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [noteId, setNoteId] = useState<string>(`note-${Date.now()}`);
+  const [quantity, setQuantity] = useState(1);
+  
   const [form, setForm] = useState({
     name: "",
     sku: "",
@@ -45,6 +64,10 @@ export function AddProductDialog() {
   const [status, setStatus] = useState<"Disponível" | "Pedido">("Disponível");
   const [orderDate, setOrderDate] = useState("");
   const [expectedDate, setExpectedDate] = useState("");
+  const [orderNumber, setOrderNumber] = useState<string>(`PED-${new Date().getFullYear()}-${Date.now()}`);
+  const [batchItems, setBatchItems] = useState<Array<any>>([]);
+  const [exclusiveSkus, setExclusiveSkus] = useState<string[]>([]); // para modo normal (quantidade)
+  const [exclusiveEditorOpen, setExclusiveEditorOpen] = useState(false);
   const [images, setImages] = useState<string[]>([]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,27 +110,88 @@ export function AddProductDialog() {
   };
 
   const handleSubmit = () => {
-    if (!form.name.trim() || !form.sku.trim()) return;
+    if (!form.name.trim()) return;
+    if (status !== "Pedido") {
+      const anyExclusive = exclusiveSkus && exclusiveSkus.some(s => s && s.trim());
+      if (!form.sku.trim() && !anyExclusive) return;
+    }
     if (status === "Pedido" && (!orderDate || !expectedDate)) {
       alert("Data do pedido e data esperada são obrigatórias");
       return;
     }
+    if (quantity < 1) {
+      alert("Quantidade deve ser pelo menos 1");
+      return;
+    }
 
-    addProduct({
-      name: form.name.trim(),
-      sku: form.sku.trim(),
-      category: form.category,
-      status: status,
-      unit: form.unit,
-      color: form.color,
-      description: form.description.trim(),
-      manufacturer: form.manufacturer,
-      createdBy: form.createdBy,
-      images: images.length > 0 ? images : undefined,
-      sofaDetails: form.category === "Sofá" ? { ...sofaDetails, size: `${sofaDetails.size}m` } : undefined,
-      orderDetails: status === "Pedido" ? { orderDate: new Date(orderDate).toISOString(), expectedDate: new Date(expectedDate).toISOString() } : undefined,
-    });
+    // Se for pedido (fábrica) e houver itens em lote, cadastrar cada item com sku único baseado no número do pedido
+    if (status === "Pedido") {
+      const orderDetails = {
+        orderId: orderNumber,
+        amount: batchItems.reduce((s, it) => s + (it.quantity || 1), 0),
+        currency: "BRL",
+        orderedDate: new Date(orderDate).toISOString(),
+        expectedDelivery: new Date(expectedDate).toISOString(),
+      } as OrderDetails;
 
+      const itemsToCreate = batchItems.length > 0 ? batchItems : [{ ...form, sofaDetails, quantity }];
+
+      itemsToCreate.forEach((item: any, idx: number) => {
+        const itemQty = item.quantity || 1;
+        for (let j = 0; j < itemQty; j++) {
+          const seq = String(j + 1).padStart(3, "0");
+          const itemSeq = String(idx + 1).padStart(3, "0");
+          const providedExclusive = item.exclusiveSkus && item.exclusiveSkus[j] && item.exclusiveSkus[j].trim();
+          const baseSku = (item.sku && item.sku.trim()) ? item.sku.trim() : `${orderNumber}-${itemSeq}`;
+          const finalSku = providedExclusive ? `${orderNumber}-${item.exclusiveSkus[j].trim()}` : `${orderNumber}-${baseSku}-${seq}`;
+
+          addProduct({
+            name: (item.name || form.name).trim(),
+            sku: finalSku,
+            noteId: orderNumber,
+            category: item.category || form.category,
+            status: status,
+            unit: item.unit || form.unit,
+            color: item.color || form.color,
+            description: (item.description || form.description).trim(),
+            manufacturer: item.manufacturer || form.manufacturer,
+            createdBy: item.createdBy || form.createdBy,
+            sofaDetails: (item.category || form.category) === "Sofá" ? { ...(item.sofaDetails || sofaDetails), size: `${(item.sofaDetails || sofaDetails).size}m` } : undefined,
+            orderDetails,
+          });
+        }
+      });
+    } else {
+      // Cadastrar múltiplos produtos com a mesma nota (modo normal)
+      for (let i = 0; i < quantity; i++) {
+        const seq = String(i + 1).padStart(3, "0");
+        const providedSku = exclusiveSkus[i] && exclusiveSkus[i].trim() ? exclusiveSkus[i].trim() : form.sku.trim();
+        const finalSku = providedSku ? `${noteId}-${providedSku}-${seq}` : `${noteId}-${seq}`;
+
+        addProduct({
+          name: form.name.trim(),
+          sku: finalSku,
+          noteId: noteId, // Mesmo noteId para agrupar os produtos da mesma nota
+          category: form.category,
+          status: status,
+          unit: form.unit,
+          color: form.color,
+          description: form.description.trim(),
+          manufacturer: form.manufacturer,
+          createdBy: form.createdBy,
+          sofaDetails: form.category === "Sofá" ? { ...sofaDetails, size: `${sofaDetails.size}m` } : undefined,
+          orderDetails: status === "Pedido" ? { orderedDate: new Date(orderDate).toISOString(), expectedDelivery: new Date(expectedDate).toISOString() } : undefined,
+        });
+      }
+    }
+
+    // Reset form
+    setNoteId(`note-${Date.now()}`);
+    setOrderNumber(`PED-${new Date().getFullYear()}-${Date.now()}`);
+    setBatchItems([]);
+    setQuantity(1);
+    setExclusiveSkus([]);
+    setExclusiveEditorOpen(false);
     setForm({ name: "", sku: "", category: "Sofá", unit: "Estoque", color: "Cinza", description: "", manufacturer: "DALLA COSTA", createdBy: "ANA" });
     setSofaDetails({ size: "2.00", fabric: "Veludo", manufacturer: "DALLA COSTA", seats: 3 });
     setStatus("Disponível");
@@ -122,11 +206,15 @@ export function AddProductDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" /> Novo Produto
-        </Button>
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" /> Novo Produto
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display">Cadastrar Produto</DialogTitle>
@@ -158,6 +246,38 @@ export function AddProductDialog() {
             <div className="space-y-2">
               <Label>Código *</Label>
               <Input placeholder="Ex: LC-0019" value={form.sku} onChange={e => update("sku", e.target.value)} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Quantidade *</Label>
+              <Input 
+                type="number" 
+                min="1" 
+                placeholder="Quantos produtos com esta nota?" 
+                value={quantity} 
+                onChange={e => {
+                  const v = Math.max(1, parseInt(e.target.value) || 1);
+                  setQuantity(v);
+                  setExclusiveSkus(prev => (prev && prev.slice(0, v)) || Array(v).fill(""));
+                }} 
+              />
+              {quantity > 1 && (
+                <div className="mt-2 flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => { setExclusiveEditorOpen(!exclusiveEditorOpen); if (!exclusiveEditorOpen) setExclusiveSkus(Array(quantity).fill("")); }}>Códigos exclusivos</Button>
+                    <p className="text-sm text-muted-foreground">(Preencha códigos únicos por unidade — opcional)</p>
+                  </div>
+                  {exclusiveEditorOpen && (
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      {Array.from({ length: quantity }).map((_, i) => (
+                        <Input key={i} placeholder={`Código único #${i+1}`} value={exclusiveSkus[i] || ""} onChange={e => {
+                          const v = e.target.value; setExclusiveSkus(prev => { const arr = [...(prev || [])]; arr[i] = v; return arr; });
+                        }} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -250,6 +370,11 @@ export function AddProductDialog() {
               <h3 className="mb-4 font-display font-semibold text-primary">Informações do Pedido para Fábrica *</h3>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
+                  <Label>Número do Pedido *</Label>
+                  <Input placeholder="Ex: PED-2026-0001" value={orderNumber} onChange={e => setOrderNumber(e.target.value)} />
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="orderDate">Data do Pedido *</Label>
                   <Input id="orderDate" type="date" value={orderDate} onChange={e => setOrderDate(e.target.value)} required />
                 </div>
@@ -257,6 +382,67 @@ export function AddProductDialog() {
                 <div className="space-y-2">
                   <Label htmlFor="expectedDate">Data Esperada de Chegada *</Label>
                   <Input id="expectedDate" type="date" value={expectedDate} onChange={e => setExpectedDate(e.target.value)} required />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <h4 className="mb-2 font-medium">Itens do Pedido</h4>
+                <p className="text-sm text-muted-foreground mb-2">Adicione múltiplos produtos com variações distintas. Cada item receberá um SKU único baseado no número do pedido.</p>
+
+                <div className="space-y-3">
+                  {batchItems.map((it, idx) => (
+                    <div key={idx} className="p-3 border rounded-lg bg-card">
+                      <div className="grid gap-2 sm:grid-cols-3">
+                        <Input placeholder="Nome do item" value={it.name || ""} onChange={e => {
+                          const v = e.target.value; setBatchItems(prev => prev.map((p,i)=> i===idx?{...p,name:v}:p));
+                        }} />
+                        <Input placeholder="SKU (sufixo opcional)" value={it.sku || ""} onChange={e => {
+                          const v = e.target.value; setBatchItems(prev => prev.map((p,i)=> i===idx?{...p,sku:v}:p));
+                        }} />
+                        <Input type="number" min={1} placeholder="Quantidade" value={it.quantity || 1} onChange={e => {
+                          const v = Math.max(1, parseInt(e.target.value) || 1);
+                          setBatchItems(prev => prev.map((p,i)=> i===idx?{...p,quantity:v, exclusiveSkus: (p.exclusiveSkus && p.exclusiveSkus.slice(0,v)) || Array(v).fill("")}:p));
+                        }} />
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-3 mt-2">
+                        <select value={it.category || form.category} onChange={e => setBatchItems(prev => prev.map((p,i)=> i===idx?{...p,category:e.target.value}:p))} className="rounded-lg border bg-card px-3 py-2 text-sm">
+                          {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                        <select value={it.color || form.color} onChange={e => setBatchItems(prev => prev.map((p,i)=> i===idx?{...p,color:e.target.value}:p))} className="rounded-lg border bg-card px-3 py-2 text-sm">
+                          {colors.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                        <select value={it.manufacturer || form.manufacturer} onChange={e => setBatchItems(prev => prev.map((p,i)=> i===idx?{...p,manufacturer:e.target.value}:p))} className="rounded-lg border bg-card px-3 py-2 text-sm">
+                          {MANUFACTURERS.map(m => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                      </div>
+                      <div className="mt-2 flex gap-2">
+                        <Button variant="outline" onClick={() => setBatchItems(prev => prev.filter((_,i)=>i!==idx))}>Remover</Button>
+                        <Button variant="outline" onClick={() => setBatchItems(prev => prev.map((p,i)=> i===idx?{...p,exclusiveOpen:!p.exclusiveOpen}:p))}>Códigos exclusivos</Button>
+                      </div>
+                      {it.exclusiveOpen && (
+                        <div className="mt-2 space-y-2">
+                          <Label>Códigos exclusivos por unidade</Label>
+                          <div className="grid gap-2 sm:grid-cols-3">
+                            {Array.from({ length: it.quantity || 1 }).map((_, k) => (
+                              <Input key={k} placeholder={`Código único #${k+1}`} value={(it.exclusiveSkus && it.exclusiveSkus[k]) || ""} onChange={e => {
+                                const v = e.target.value;
+                                setBatchItems(prev => prev.map((p,i)=> {
+                                  if (i!==idx) return p;
+                                  const arr = (p.exclusiveSkus && [...p.exclusiveSkus]) || Array(p.quantity || 1).fill("");
+                                  arr[k] = v;
+                                  return { ...p, exclusiveSkus: arr };
+                                }));
+                              }} />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  <div>
+                    <Button onClick={() => setBatchItems(prev => [...prev, { name: "", sku: "", quantity: 1, category: form.category, color: form.color, manufacturer: form.manufacturer, exclusiveSkus: [], exclusiveOpen: false }])}>Adicionar Item</Button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -311,7 +497,7 @@ export function AddProductDialog() {
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-          <Button onClick={handleSubmit} disabled={!form.name.trim() || !form.sku.trim()}>Cadastrar</Button>
+          <Button onClick={handleSubmit} disabled={!form.name.trim() || (status !== "Pedido" && !form.sku.trim() && !(exclusiveSkus && exclusiveSkus.some(s=>s && s.trim())))}>Cadastrar</Button>
         </DialogFooter>
       </DialogContent>
 

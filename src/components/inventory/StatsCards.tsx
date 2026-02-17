@@ -24,8 +24,32 @@ export function StatsCards() {
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {cards.map(card => {
         const Icon = iconMap[card.icon];
+        // tornar alguns cards clicáveis (status filters)
+        const isClickable = ["Disponíveis", "Vendidos", "Pedidos (a caminho)"].includes(card.label);
+        const handleClick = () => {
+          if (!isClickable) {
+            navigate(`/produtos`);
+            return;
+          }
+          // mapear label para status query
+          const map: Record<string, string> = {
+            "Disponíveis": "Disponível",
+            "Vendidos": "Vendido",
+            "Pedidos (a caminho)": "Pedido",
+          };
+          const status = map[card.label];
+          navigate(`/produtos?status=${encodeURIComponent(status)}`);
+        };
+
         return (
-          <div key={card.label} className="animate-fade-in rounded-xl border bg-card p-5 shadow-sm">
+          <div
+            key={card.label}
+            role={isClickable ? "button" : undefined}
+            tabIndex={isClickable ? 0 : undefined}
+            onClick={isClickable ? handleClick : undefined}
+            onKeyDown={isClickable ? (e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") handleClick(); } : undefined}
+            className={`animate-fade-in rounded-xl border bg-card p-5 shadow-sm ${isClickable ? "cursor-pointer hover:shadow-md focus:outline-none focus:ring-2 focus:ring-ring" : ""}`}
+          >
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-muted-foreground">{card.label}</span>
               <Icon className={`h-5 w-5 ${card.color}`} />

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { DeliveryDialog } from "./DeliveryDialog";
 
 const units: StoreUnit[] = ["Shopping Praça Nova", "Camobi", "Estoque"];
 
@@ -35,8 +36,13 @@ export function SellDialog({ product, open, onOpenChange }: SellDialogProps) {
     );
     setSellerUser("ALESSANDRA");
     setSellUnit(product.unit);
-    onOpenChange(false);
+    // Após marcar como vendido, abrir diálogo de endereço
+    setTimeout(() => {
+      setDeliveryOpen(true);
+    }, 150);
   };
+
+  const [deliveryOpen, setDeliveryOpen] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -80,6 +86,7 @@ export function SellDialog({ product, open, onOpenChange }: SellDialogProps) {
           <Button onClick={handleSell}>Confirmar Venda</Button>
         </DialogFooter>
       </DialogContent>
+      <DeliveryDialog product={product} open={deliveryOpen} onClose={() => { setDeliveryOpen(false); onOpenChange(false); }} />
     </Dialog>
   );
 }

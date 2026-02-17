@@ -8,6 +8,8 @@ interface InventoryContextType {
   updateProduct: (id: string, product: Partial<Product>, user: SystemUser, reason?: string) => void;
   updateProductStatus: (id: string, status: ProductStatus, user: SystemUser, reason?: string, soldBy?: string, soldUnit?: StoreUnit, orderDetails?: OrderDetails) => void;
   transferProduct: (id: string, newUnit: StoreUnit, user: SystemUser, reason?: string) => void;
+  setDeliveryInfo: (id: string, address: string, referencePoint?: string, type?: "Casa" | "Apartamento", floor?: string, access?: "Escada" | "Elevador") => void;
+  markDelivered: (id: string, user: SystemUser) => void;
   deleteProduct: (id: string, user: SystemUser) => boolean;
   getProductsByUnit: (unit: StoreUnit) => Product[];
   getProductsByStatus: (status: ProductStatus) => Product[];
@@ -94,6 +96,52 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const setDeliveryInfo = useCallback((id: string, address: string, referencePoint?: string, type?: "Casa" | "Apartamento", floor?: string, access?: "Escada" | "Elevador") => {
+    const now = new Date().toISOString();
+    setProducts(prev => prev.map(p => {
+      if (p.id !== id) return p;
+      const entry: HistoryEntry = {
+        id: `h-${Date.now()}`,
+        action: "UPDATED",
+        user: p.createdBy,
+        timestamp: now,
+        details: { reason: `Endereço de entrega definido: ${address}` },
+      };
+      return {
+        ...p,
+        deliveryAddress: address,
+        deliveryReferencePoint: referencePoint,
+        deliveryType: type,
+        deliveryFloor: floor,
+        deliveryAccess: access,
+        deliveryStatus: "Pendente",
+        updatedAt: now,
+        history: [entry, ...p.history],
+      };
+    }));
+  }, []);
+
+  const markDelivered = useCallback((id: string, user: SystemUser) => {
+    const now = new Date().toISOString();
+    setProducts(prev => prev.map(p => {
+      if (p.id !== id) return p;
+      const entry: HistoryEntry = {
+        id: `h-${Date.now()}`,
+        action: "STATUS_CHANGED",
+        user,
+        timestamp: now,
+        details: { reason: "Entregue ao cliente" },
+      };
+      return {
+        ...p,
+        deliveryStatus: "Entregue",
+        deliveredAt: now,
+        updatedAt: now,
+        history: [entry, ...p.history],
+      };
+    }));
+  }, []);
+
   const transferProduct = useCallback((id: string, newUnit: StoreUnit, user: SystemUser, reason?: string) => {
     const now = new Date().toISOString();
     setProducts(prev => prev.map(p => {
@@ -141,7 +189,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   return (
     <InventoryContext.Provider value={{
       products, addProduct, updateProduct, updateProductStatus, transferProduct, deleteProduct,
-      getProductsByUnit, getProductsByStatus, stats,
+      getProductsByUnit, getProductsByStatus, stats, setDeliveryInfo, markDelivered,
     }}>
       {children}
     </InventoryContext.Provider>

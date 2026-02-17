@@ -7,6 +7,7 @@ import { useState } from "react";
 const navItems = [
   { label: "Dashboard", path: "/" },
   { label: "Produtos", path: "/produtos" },
+  { label: "Entregas", path: "/entregas" },
 ];
 
 export function Header() {

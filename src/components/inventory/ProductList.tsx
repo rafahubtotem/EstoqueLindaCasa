@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useInventory } from "@/contexts/InventoryContext";
-import { ProductStatus, StoreUnit } from "@/types/inventory";
+import { ProductStatus, StoreUnit, Product } from "@/types/inventory";
 import { ProductCard } from "./ProductCard";
 import { Search, X, LayoutGrid, List } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -9,9 +9,13 @@ import { Button } from "@/components/ui/button";
 
 const allStatuses: ProductStatus[] = ["Disponível", "Vendido", "Pedido", "Reservado"];
 const allUnits: StoreUnit[] = ["Shopping Praça Nova", "Camobi", "Estoque"];
+interface ProductListProps {
+  products?: Product[];
+}
 
-export function ProductList() {
-  const { products } = useInventory();
+export function ProductList({ products: productsProp }: ProductListProps = {}) {
+  const { products: allProducts } = useInventory();
+  const { products } = { products: productsProp ?? allProducts } as { products: Product[] };
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProductStatus | "Todos">("Todos");
   const [searchParams] = useSearchParams();
