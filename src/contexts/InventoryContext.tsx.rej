@@ -1,0 +1,25 @@
+--- src/contexts/InventoryContext.tsx
++++ src/contexts/InventoryContext.tsx
+@@ -99,19 +99,19 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
+ 
+   const setDeliveryInfo = useCallback((id: string, address: string, user: SystemUser, referencePoint?: string, type?: "Casa" | "Apartamento", floor?: string, access?: "Escada" | "Elevador") => {
+     const now = new Date().toISOString();
+     setProducts(prev => prev.map(p => {
+       if (p.id !== id) return p;
+       const entry: HistoryEntry = {
+         id: `h-${Date.now()}`,
+-        action: "UPDATED",
+-        user: p.createdBy,
++        action: "DELIVERY_INFO_SET",
++        user: user,
+         timestamp: now,
+-        details: { reason: `Endereço de entrega definido: ${address}` },
++        details: { reason: `Venda finalizada - Endereço de entrega registrado: ${address}` },
+       };
+       return {
+         ...p,
+         deliveryAddress: address,
+         deliveryReferencePoint: referencePoint,
+         deliveryType: type,
+         deliveryFloor: floor,
+ 

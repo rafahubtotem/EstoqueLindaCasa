@@ -37,16 +37,16 @@ export function ProductList({ products: productsProp }: ProductListProps = {}) {
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Filtros */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
+      <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:flex-wrap">
+        <div className="relative flex-1 min-w-0 sm:flex-none sm:w-auto">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Buscar por nome ou código"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="pl-9"
+            className="pl-9 text-xs sm:text-sm"
           />
           {search && (
             <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -58,7 +58,7 @@ export function ProductList({ products: productsProp }: ProductListProps = {}) {
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value as ProductStatus | "Todos")}
-            className="rounded-lg border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-lg border bg-card/70 backdrop-blur-md px-3 py-2 text-xs sm:text-sm border-white/20 dark:border-white/10 transition-smooth focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="Todos">Todos os status</option>
             {allStatuses.map(s => <option key={s} value={s}>{s}</option>)}
@@ -66,12 +66,12 @@ export function ProductList({ products: productsProp }: ProductListProps = {}) {
           <select
             value={unitFilter}
             onChange={e => setUnitFilter(e.target.value as StoreUnit | "Todos")}
-            className="rounded-lg border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-lg border bg-card/70 backdrop-blur-md px-3 py-2 text-xs sm:text-sm border-white/20 dark:border-white/10 transition-smooth focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="Todos">Todas as unidades</option>
             {allUnits.map(u => <option key={u} value={u}>{u}</option>)}
           </select>
-          <div className="flex gap-1 rounded-lg border bg-card p-1">
+          <div className="flex gap-1 rounded-lg border bg-card/70 backdrop-blur-md p-1 border-white/20 dark:border-white/10">
             <Button
               variant={viewMode === "list" ? "secondary" : "ghost"}
               size="icon"
@@ -92,12 +92,12 @@ export function ProductList({ products: productsProp }: ProductListProps = {}) {
         </div>
       </div>
 
-      <p className="text-sm text-muted-foreground">{filtered.length} produto(s) encontrado(s)</p>
+      <p className="text-xs sm:text-sm text-muted-foreground">{filtered.length} produto(s) encontrado(s)</p>
 
       {/* Lista ou Grid */}
       <div className={viewMode === "grid" 
-        ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-3" 
-        : "space-y-2"
+        ? "grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" 
+        : "space-y-2 sm:space-y-3"
       }>
         {filtered.map(p => (
           <ProductCard key={p.id} product={p} />
@@ -105,8 +105,8 @@ export function ProductList({ products: productsProp }: ProductListProps = {}) {
       </div>
 
       {filtered.length === 0 && (
-        <div className="py-12 text-center">
-          <p className="text-muted-foreground">Nenhum produto encontrado.</p>
+        <div className="py-8 sm:py-12 text-center">
+          <p className="text-xs sm:text-sm text-muted-foreground">Nenhum produto encontrado.</p>
         </div>
       )}
     </div>

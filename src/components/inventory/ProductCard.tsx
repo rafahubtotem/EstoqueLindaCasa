@@ -17,26 +17,26 @@ export function ProductCard({ product }: ProductCardProps) {
     <>
       <div
         onClick={() => setDetailOpen(true)}
-        className="group animate-fade-in cursor-pointer rounded-xl border bg-card shadow-sm transition-all hover:shadow-md hover:border-primary/30"
+        className="group animate-fade-in cursor-pointer rounded-xl border bg-card/70 backdrop-blur-md shadow-sm border-white/20 dark:border-white/10 transition-smooth hover:shadow-md hover:border-primary/30"
       >
-        <div className="flex gap-4 p-4">
+        <div className="flex gap-2 sm:gap-4 p-2 sm:p-4">
           {/* Miniatura */}
           <div className="shrink-0">
             {product.images && product.images.length > 0 ? (
               <ImageViewer
                 images={product.images}
                 alt={product.name}
-                className="h-20 w-20 sm:h-24 sm:w-24"
+                className="h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 rounded-lg"
               />
             ) : product.imageUrl ? (
               <ImageViewer
                 src={product.imageUrl}
                 alt={product.name}
-                className="h-20 w-20 sm:h-24 sm:w-24"
+                className="h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 rounded-lg"
               />
             ) : (
-              <div className="flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-lg bg-muted">
-                <Package className="h-8 w-8 text-muted-foreground" />
+              <div className="flex h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 items-center justify-center rounded-lg bg-muted">
+                <Package className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
               </div>
             )}
           </div>
@@ -47,15 +47,15 @@ export function ProductCard({ product }: ProductCardProps) {
               <span className="text-xs font-mono text-muted-foreground">{product.sku}</span>
               <StatusBadge status={product.status} />
             </div>
-            <h3 className="mt-1 font-display font-semibold truncate group-hover:text-primary transition-colors">
+            <h3 className="mt-1 font-display font-semibold text-xs sm:text-base truncate group-hover:text-primary transition-colors">
               {product.name}
             </h3>
-            <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+            <div className="mt-1 flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-muted-foreground">
               <span>📍 {product.unit}</span>
-              <span>🎨 {product.color}</span>
-              <span className="flex items-center gap-1"><Factory className="h-3 w-3" /> {product.manufacturer}</span>
+              <span className="hidden sm:inline">🎨 {product.color}</span>
+              <span className="hidden lg:flex items-center gap-1"><Factory className="h-3 w-3" /> {product.manufacturer}</span>
               {product.category === "Sofá" && product.sofaDetails && (
-                <span>📐 {product.sofaDetails.size}</span>
+                <span className="hidden sm:inline">📐 {product.sofaDetails.size}</span>
               )}
             </div>
             {product.status === "Vendido" && product.soldBy && (

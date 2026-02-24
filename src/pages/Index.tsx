@@ -21,40 +21,42 @@ const Index = () => {
 
   return (
     <AppLayout>
-      <div className="container py-6 space-y-8">
+      <div className="container py-4 sm:py-6 space-y-6 sm:space-y-8">
         <div>
-          <h1 className="font-display text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Visão geral</p>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold">Dashboard</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">Visão geral</p>
         </div>
 
         <StatsCards />
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
           {/* Últimas vendas */}
-          <div className="rounded-xl border bg-card p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-lg font-semibold">Últimas Vendas</h2>
-              <Link to="/produtos" className="flex items-center gap-1 text-xs text-primary hover:underline">
+          <div className="rounded-xl border bg-card/70 backdrop-blur-md p-3 sm:p-5 shadow-sm border-white/20 dark:border-white/10 transition-smooth hover:shadow-md">
+            <div className="flex flex-col gap-3 sm:gap-0 sm:flex-row sm:items-center sm:justify-between mb-4">
+              <h2 className="font-display text-base sm:text-lg font-semibold">Últimas Vendas</h2>
+              <Link to="/produtos" className="flex items-center gap-1 text-xs text-primary hover:underline transition-smooth">
                 Ver todos <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
             {recentSold.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhuma venda registrada.</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Nenhuma venda registrada.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {recentSold.map(p => (
                   <div 
                     key={p.id} 
                     onClick={() => setSelectedProduct(p)}
-                    className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 cursor-pointer hover:bg-muted transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg bg-muted/50 px-3 py-2 cursor-pointer hover:bg-muted transition-smooth"
                   >
-                    <div>
-                      <p className="text-sm font-medium">{p.name}</p>
-                      <p className="text-xs text-muted-foreground">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm font-medium truncate">{p.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">
                         por {p.soldBy} • {p.soldAt ? new Date(p.soldAt).toLocaleDateString("pt-BR") : "—"} • {p.soldUnit}
                       </p>
                     </div>
-                    <StatusBadge status="Vendido" />
+                    <div className="self-start sm:self-auto">
+                      <StatusBadge status="Vendido" />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -62,25 +64,27 @@ const Index = () => {
           </div>
 
           {/* Pedidos a caminho */}
-          <div className="rounded-xl border bg-card p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-lg font-semibold">Pedidos a Caminho</h2>
+          <div className="rounded-xl border bg-card/70 backdrop-blur-md p-3 sm:p-5 shadow-sm border-white/20 dark:border-white/10 transition-smooth hover:shadow-md">
+            <div className="flex flex-col gap-3 sm:gap-0 sm:flex-row sm:items-center sm:justify-between mb-4">
+              <h2 className="font-display text-base sm:text-lg font-semibold">Pedidos a Caminho</h2>
             </div>
             {recentOrdered.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhum pedido pendente.</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Nenhum pedido pendente.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {recentOrdered.map(p => (
                   <div 
                     key={p.id} 
                     onClick={() => setSelectedProduct(p)}
-                    className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 cursor-pointer hover:bg-muted transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg bg-muted/50 px-3 py-2 cursor-pointer hover:bg-muted transition-smooth"
                   >
-                    <div>
-                      <p className="text-sm font-medium">{p.name}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm font-medium truncate">{p.name}</p>
                       <p className="text-xs text-muted-foreground">Destino: {p.unit}</p>
                     </div>
-                    <StatusBadge status="Pedido" />
+                    <div className="self-start sm:self-auto">
+                      <StatusBadge status="Pedido" />
+                    </div>
                   </div>
                 ))}
               </div>

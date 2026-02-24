@@ -55,7 +55,7 @@ export interface SofaDetails {
 
 export interface HistoryEntry {
   id: string;
-  action: "CREATED" | "STATUS_CHANGED" | "TRANSFERRED" | "UPDATED" | "DELETED";
+  action: "CREATED" | "STATUS_CHANGED" | "TRANSFERRED" | "UPDATED" | "DELETED" | "DELIVERY_INFO_SET";
   user: SystemUser;
   timestamp: string;
   details: {

@@ -60,15 +60,16 @@ const Produtos = () => {
 
   return (
     <AppLayout>
-      <div className="container py-6 space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="container py-4 sm:py-6 space-y-4 sm:space-y-6">
+        <div className="flex flex-col gap-4 sm:gap-0 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="font-display text-3xl font-bold">Produtos</h1>
-            <p className="text-muted-foreground">Gerencie seu inventário de produtos</p>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold">Produtos</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">Gerencie seu inventário de produtos</p>
           </div>
-          <Button onClick={() => setOpenAddDialog(true)} className="gap-2">
+          <Button onClick={() => setOpenAddDialog(true)} className="gap-2 w-full sm:w-auto justify-center sm:justify-start">
             <Plus className="w-4 h-4" />
-            Novo Produto
+            <span className="hidden sm:inline">Novo Produto</span>
+            <span className="sm:hidden">Novo</span>
           </Button>
         </div>
 
@@ -76,7 +77,7 @@ const Produtos = () => {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value as any)}
-            className="px-3 py-2 border rounded-md text-sm bg-card"
+            className="px-3 py-2 border rounded-md text-xs sm:text-sm bg-card/70 backdrop-blur-md border-white/20 dark:border-white/10 transition-smooth"
           >
             <option value="Todos">Todos os Status</option>
             <option value="Disponível">Disponível</option>
@@ -88,7 +89,7 @@ const Produtos = () => {
           <select
             value={selectedUnit}
             onChange={(e) => setSelectedUnit(e.target.value as any)}
-            className="px-3 py-2 border rounded-md text-sm bg-card"
+            className="px-3 py-2 border rounded-md text-xs sm:text-sm bg-card/70 backdrop-blur-md border-white/20 dark:border-white/10 transition-smooth"
           >
             <option value="Todos">Todas as Unidades</option>
             <option value="Shopping Praça Nova">Shopping Praça Nova</option>
@@ -99,7 +100,7 @@ const Produtos = () => {
           <select
             value={selectedSeller}
             onChange={(e) => setSelectedSeller(e.target.value as any)}
-            className="px-3 py-2 border rounded-md text-sm bg-card"
+            className="px-3 py-2 border rounded-md text-xs sm:text-sm bg-card/70 backdrop-blur-md border-white/20 dark:border-white/10 transition-smooth"
           >
             <option value="Todos">Todos os Vendedores</option>
             {SALES_USERS.map(u => <option key={u} value={u}>{u}</option>)}
@@ -107,7 +108,7 @@ const Produtos = () => {
         </div>
 
         <div>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-4">
             Mostrando {filteredProducts.length} de {products.length} produtos
           </p>
           <ProductList products={filteredProducts} />

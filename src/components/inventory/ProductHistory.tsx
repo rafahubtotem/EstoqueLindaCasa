@@ -17,6 +17,8 @@ export function ProductHistory({ history }: { history: HistoryEntry[] }) {
         return <Edit className="h-4 w-4" />;
       case "SOLD":
         return <FileText className="h-4 w-4" />;
+      case "DELIVERY_INFO_SET":
+        return <FileText className="h-4 w-4" />;
       default:
         return <Clock className="h-4 w-4" />;
     }
@@ -38,6 +40,10 @@ export function ProductHistory({ history }: { history: HistoryEntry[] }) {
         return "Produto Editado";
       case "SOLD":
         return "Marcado como Vendido";
+      case "DELIVERY_INFO_SET":
+        return "Venda Finalizada";
+      case "UPDATED":
+        return "Atualizado";
       default:
         return entry.action;
     }

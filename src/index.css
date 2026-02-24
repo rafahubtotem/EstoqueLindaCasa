@@ -124,8 +124,110 @@
     @apply border-border;
   }
 
+  html {
+    background-attachment: fixed;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Space Grotesk', sans-serif;
+    background-image: 
+      radial-gradient(circle at 20% 80%, rgba(45, 45, 45, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(45, 45, 45, 0.02) 0%, transparent 50%),
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(45, 45, 45, 0.01) 2px,
+        rgba(45, 45, 45, 0.01) 4px
+      );
+    background-size: 100% 100%, 100% 100%, 100% 100%;
+  }
+
+  body.dark {
+    background-image: 
+      radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.02) 0%, transparent 50%),
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.01) 2px,
+        rgba(255, 255, 255, 0.01) 4px
+      );
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/40 dark:bg-slate-950/40 backdrop-blur-xl border border-white/20 dark:border-white/10;
+  }
+
+  .glass-card {
+    @apply bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-white/20 dark:border-white/10;
+  }
+
+  .glass-light {
+    @apply bg-white/30 dark:bg-slate-950/30 backdrop-blur-lg border border-white/10 dark:border-white/5;
+  }
+
+  /* Animações de transição */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Classes de transição reutilizáveis */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+  }
+
+  .animate-fade-in-scale {
+    animation: fadeInScale 0.3s ease-out;
+  }
+
+  /* Transições gerais para elementos */
+  .transition-smooth {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  /* Transição rápida */
+  .transition-quick {
+    @apply transition-all duration-150 ease-in-out;
+  }
+
+  /* Transição lenta para elementos principais */
+  .transition-slow {
+    @apply transition-all duration-500 ease-in-out;
   }
 }
