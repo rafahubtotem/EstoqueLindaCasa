@@ -8,6 +8,7 @@ const navItems = [
   { label: "Dashboard", path: "/" },
   { label: "Produtos", path: "/produtos" },
   { label: "Entregas", path: "/entregas" },
+  { label: "Vendas", path: "/vendas" },
 ];
 
 export function Header() {

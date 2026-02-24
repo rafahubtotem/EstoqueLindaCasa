@@ -27,6 +27,10 @@ export function ProductHistory({ history }: { history: HistoryEntry[] }) {
       case "CREATED":
         return "Produto Cadastrado";
       case "STATUS_CHANGED":
+        // Check if this is a delivery status change based on the reason
+        if (entry.details?.reason?.includes("Entregue")) {
+          return `Status de Entrega: ${entry.details?.oldStatus} → ${entry.details?.newStatus}`;
+        }
         return `Status Alterado: ${entry.details?.oldStatus} → ${entry.details?.newStatus}`;
       case "TRANSFERRED":
         return `Transferído: ${entry.details?.oldUnit} → ${entry.details?.newUnit}`;

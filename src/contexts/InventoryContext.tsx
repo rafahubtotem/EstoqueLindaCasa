@@ -6,7 +6,7 @@ interface InventoryContextType {
   products: Product[];
   addProduct: (product: Omit<Product, "id" | "history" | "createdAt" | "updatedAt">) => void;
   updateProduct: (id: string, product: Partial<Product>, user: SystemUser, reason?: string) => void;
-  updateProductStatus: (id: string, status: ProductStatus, user: SystemUser, reason?: string, soldBy?: string, soldUnit?: StoreUnit, orderDetails?: OrderDetails) => void;
+  updateProductStatus: (id: string, status: ProductStatus, user: SystemUser, reason?: string, soldBy?: string, soldUnit?: StoreUnit, orderDetails?: OrderDetails, soldPrice?: number) => void;
   transferProduct: (id: string, newUnit: StoreUnit, user: SystemUser, reason?: string) => void;
   setDeliveryInfo: (id: string, address: string, referencePoint?: string, type?: "Casa" | "Apartamento", floor?: string, access?: "Escada" | "Elevador") => void;
   markDelivered: (id: string, user: SystemUser) => void;
@@ -70,7 +70,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  const updateProductStatus = useCallback((id: string, status: ProductStatus, user: SystemUser, reason?: string, soldBy?: string, soldUnit?: StoreUnit, orderDetails?: OrderDetails) => {
+  const updateProductStatus = useCallback((id: string, status: ProductStatus, user: SystemUser, reason?: string, soldBy?: string, soldUnit?: StoreUnit, orderDetails?: OrderDetails, soldPrice?: number) => {
     const now = new Date().toISOString();
     setProducts(prev => prev.map(p => {
       if (p.id !== id) return p;
@@ -90,7 +90,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         status,
         updatedAt: now,
         history: [entry, ...p.history],
-        ...(status === "Vendido" ? { soldBy: soldBy || user, soldAt: now, soldUnit: soldUnit || p.unit } : {}),
+        ...(status === "Vendido" ? { soldBy: soldBy || user, soldAt: now, soldUnit: soldUnit || p.unit, ...(soldPrice ? { soldPrice } : {}) } : {}),
         ...(status === "Pedido" && orderDetails ? { orderDetails } : {}),
       };
     }));
@@ -130,7 +130,11 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         action: "STATUS_CHANGED",
         user,
         timestamp: now,
-        details: { reason: "Entregue ao cliente" },
+        details: { 
+          oldStatus: p.deliveryStatus || "Pendente",
+          newStatus: "Entregue",
+          reason: "Entregue ao cliente" 
+        },
       };
       return {
         ...p,

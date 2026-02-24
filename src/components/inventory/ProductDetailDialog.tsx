@@ -20,7 +20,7 @@ interface ProductDetailDialogProps {
 export function ProductDetailDialog({ product, open, onOpenChange }: ProductDetailDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full max-w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -37,13 +37,13 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
             <ImageViewer
               images={product.images}
               alt={product.name}
-              className="h-56 w-full"
+              className="h-48 sm:h-56 w-full object-cover"
             />
           ) : product.imageUrl && (
             <ImageViewer
               src={product.imageUrl}
               alt={product.name}
-              className="h-56 w-full"
+              className="h-48 sm:h-56 w-full object-cover"
             />
           )}
 
@@ -68,6 +68,13 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
               <div>
                 <p className="text-xs text-muted-foreground">Cor</p>
                 <p className="font-medium">{product.color}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
+              <Factory className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="text-xs text-muted-foreground">Fabricante</p>
+                <p className="font-medium">{product.manufacturer}</p>
               </div>
             </div>
           </div>

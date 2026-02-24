@@ -64,6 +64,10 @@ export interface HistoryEntry {
     newValue?: string;
     fromUnit?: StoreUnit;
     toUnit?: StoreUnit;
+    oldStatus?: string;
+    newStatus?: string;
+    oldUnit?: StoreUnit;
+    newUnit?: StoreUnit;
   };
 }
 

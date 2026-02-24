@@ -45,10 +45,10 @@ export function DeliveryDialog({ product, open, onClose }: DeliveryDialogProps) 
   const mapsLink = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+    <Dialog open={open} onOpenChange={(v) => { if (v) return; /* Prevent closing */ }}>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display">Endereço de Entrega</DialogTitle>
+          <DialogTitle className="font-display">Endereço de Entrega (Obrigatório)</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
@@ -103,8 +103,8 @@ export function DeliveryDialog({ product, open, onClose }: DeliveryDialogProps) 
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button onClick={save}>Salvar Endereço</Button>
+          <Button variant="outline" onClick={onClose}>Voltar</Button>
+          <Button onClick={save}>Salvar Endereço e Finalizar</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

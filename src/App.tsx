@@ -8,6 +8,7 @@ import { InventoryProvider } from "@/contexts/InventoryContext";
 import Index from "./pages/Index";
 import Produtos from "./pages/Produtos";
 import Entregas from "./pages/Entregas";
+import Vendas from "./pages/Vendas";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/produtos" element={<Produtos />} />
               <Route path="/entregas" element={<Entregas />} />
+              <Route path="/vendas" element={<Vendas />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

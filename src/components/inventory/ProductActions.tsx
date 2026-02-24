@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, ArrowRightLeft, ShoppingBag, Trash2, Edit } from "lucide-react";
+import { ArrowRightLeft, ShoppingBag, Trash2, Edit } from "lucide-react";
 import { SellDialog } from "./SellDialog";
 import { UserSelectionDialog } from "./UserSelectionDialog";
 import { OrderDetailsDialog } from "./OrderDetailsDialog";
@@ -72,8 +72,9 @@ export function ProductActions({ product }: { product: Product }) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <MoreHorizontal className="h-4 w-4" />
+          <Button variant="ghost" className="h-8 px-3 flex items-center gap-2 whitespace-nowrap">
+            <span className="hidden md:inline">editar status do produto</span>
+            <span className="md:hidden text-sm">editar</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="z-50 w-48 bg-popover">

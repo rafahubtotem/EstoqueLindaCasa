@@ -51,30 +51,32 @@ export default function Entregas() {
   );
 
   return (
-    <div className="container py-6">
-      <h1 className="font-display text-2xl mb-6">Entregas</h1>
+    <AppLayout>
+      <div className="container py-6">
+        <h1 className="font-display text-2xl mb-6">Entregas</h1>
 
-      {/* Entregas Pendentes */}
-      <div className="mb-8">
-        <h2 className="font-semibold text-lg mb-3">Entregas Pendentes ({entregasPendentes.length})</h2>
-        {entregasPendentes.length === 0 ? (
-          <div className="rounded-lg border bg-card p-4 text-muted-foreground">Nenhuma entrega pendente.</div>
-        ) : (
-          <div className="grid gap-3">
-            {entregasPendentes.map(p => renderEntrega(p, true))}
+        {/* Entregas Pendentes */}
+        <div className="mb-8">
+          <h2 className="font-semibold text-lg mb-3">Entregas Pendentes ({entregasPendentes.length})</h2>
+          {entregasPendentes.length === 0 ? (
+            <div className="rounded-lg border bg-card p-4 text-muted-foreground">Nenhuma entrega pendente.</div>
+          ) : (
+            <div className="grid gap-3">
+              {entregasPendentes.map(p => renderEntrega(p, true))}
+            </div>
+          )}
+        </div>
+
+        {/* Histórico de Entregas */}
+        {historicoEntregas.length > 0 && (
+          <div>
+            <h2 className="font-semibold text-lg mb-3">Histórico de Entregas ({historicoEntregas.length})</h2>
+            <div className="grid gap-3">
+              {historicoEntregas.map(p => renderEntrega(p, false))}
+            </div>
           </div>
         )}
       </div>
-
-      {/* Histórico de Entregas */}
-      {historicoEntregas.length > 0 && (
-        <div>
-          <h2 className="font-semibold text-lg mb-3">Histórico de Entregas ({historicoEntregas.length})</h2>
-          <div className="grid gap-3">
-            {historicoEntregas.map(p => renderEntrega(p, false))}
-          </div>
-        </div>
-      )}
-    </div>
+    </AppLayout>
   );
 }
